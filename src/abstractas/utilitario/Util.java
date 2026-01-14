@@ -1,78 +1,156 @@
 package abstractas.utilitario;
+
 import abstractas.negocio.Empleado;
 import abstractas.negocio.HuellaDigital;
 import abstractas.negocio.ReconocimientoFacial;
 import abstractas.negocio.TokenSeguridad;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Util {
     public List<Empleado> empleados;
+
     public Util(){
         empleados = new ArrayList<>();
     }
 
-    public void agregarEmpleado(String cedula, String nombre){
-        int indice = buscarEmpleado(cedula);
-        if (indice == -1)
-            empleados.add(new Empleado(cedula,nombre));
-        else
-            System.out.println("El empleado ya existe");
-
+    // Métodos de validación
+    private void validarCedula(String cedula) throws IllegalArgumentException {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            throw new IllegalArgumentException("La cédula no puede estar vacía");
+        }
+        if (cedula.length() != 10) {
+            throw new IllegalArgumentException("La cédula debe tener exactamente 10 dígitos");
+        }
+        for (int i = 0; i < cedula.length(); i++) {
+            if (!Character.isDigit(cedula.charAt(i))) {
+                throw new IllegalArgumentException("La cédula solo puede contener números");
+            }
+        }
     }
+
+    private void validarNivelSeguridad(int nivelSeguridad) throws IllegalArgumentException {
+        if (nivelSeguridad < 1 || nivelSeguridad > 10) {
+            throw new IllegalArgumentException("El nivel de seguridad debe estar entre 1 y 10");
+        }
+    }
+
+    private void validarPatron(String patron, String tipoPatron) throws IllegalArgumentException {
+        if (patron == null || patron.trim().isEmpty()) {
+            throw new IllegalArgumentException("El " + tipoPatron + " no puede estar vacío");
+        }
+    }
+
+    private void validarNombre(String nombre) throws IllegalArgumentException {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre no puede estar vacío");
+        }
+    }
+
+    private void validarEmpleadoNoExiste(String cedula) throws IllegalArgumentException {
+        if (buscarEmpleado(cedula) != -1) {
+            throw new IllegalArgumentException("Ya existe un empleado con esta cédula");
+        }
+    }
+
+    private void validarEmpleadoExiste(String cedula) throws IllegalArgumentException {
+        if (buscarEmpleado(cedula) == -1) {
+            throw new IllegalArgumentException("El empleado no existe");
+        }
+    }
+
+    public void agregarEmpleado(String cedula, String nombre){
+        try {
+            validarCedula(cedula);
+            validarNombre(nombre);
+            validarEmpleadoNoExiste(cedula);
+
+            empleados.add(new Empleado(cedula, nombre));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error al agregar empleado: " + e.getMessage());
+        }
+    }
+
     public int buscarEmpleado(String cedula){
+        try {
+            validarCedula(cedula);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            return -1;
+        }
+
         for(int i = 0; i < empleados.size(); i++){
             if (empleados.get(i).getCedula().equals(cedula))
-                return  i;
+                return i;
         }
         return -1;
     }
 
     public void agregarAutentificacionHuella(String cedula, int nivelSeguridad, String patronHuella){
-        int indice = buscarEmpleado(cedula);
-        if (indice != -1)
+        try {
+            validarCedula(cedula);
+            validarNivelSeguridad(nivelSeguridad);
+            validarPatron(patronHuella, "patrón de huella");
+            validarEmpleadoExiste(cedula);
+
+            int indice = buscarEmpleado(cedula);
             empleados.get(indice).agregarAutentificacion(new HuellaDigital(nivelSeguridad, patronHuella));
-        else
-            System.out.println("El empleado no existe");
-
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error al agregar huella digital: " + e.getMessage());
+        }
     }
 
-    public void agregarAutentificacionToken(String cedula, int nivelSeguridad, String patronHuella){ // hacer
-        int indice = buscarEmpleado(cedula);
-        if (indice != -1)
-            empleados.get(indice).agregarAutentificacion(new TokenSeguridad(nivelSeguridad, patronHuella));
-        else
-            System.out.println("El empleado no existe");
+    public void agregarAutentificacionToken(String cedula, int nivelSeguridad, String patronToken){
+        try {
+            validarCedula(cedula);
+            validarNivelSeguridad(nivelSeguridad);
+            validarPatron(patronToken, "patrón token");
+            validarEmpleadoExiste(cedula);
 
+            int indice = buscarEmpleado(cedula);
+            empleados.get(indice).agregarAutentificacion(new TokenSeguridad(nivelSeguridad, patronToken));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error al agregar token de seguridad: " + e.getMessage());
+        }
     }
 
-    public void agregarAutentificacionRostro(String cedula, int nivelSeguridad, String patronHuella){ // hacer
-        int indice = buscarEmpleado(cedula);
-        if (indice != -1)
-            empleados.get(indice).agregarAutentificacion(new ReconocimientoFacial(nivelSeguridad, patronHuella));
-        else
-            System.out.println("El empleado no existe");
+    public void agregarAutentificacionRostro(String cedula, int nivelSeguridad, String mapaRostro){
+        try {
+            validarCedula(cedula);
+            validarNivelSeguridad(nivelSeguridad);
+            validarPatron(mapaRostro, "mapa de rostro");
+            validarEmpleadoExiste(cedula);
 
+            int indice = buscarEmpleado(cedula);
+            empleados.get(indice).agregarAutentificacion(new ReconocimientoFacial(nivelSeguridad, mapaRostro));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Error al agregar reconocimiento facial: " + e.getMessage());
+        }
     }
 
     public int contarAuntentificacionesHuella(String cedula){
-        int indice = buscarEmpleado(cedula);
-        if (indice != -1)
-            return  empleados.get(indice).contarAutenticacionesToken();
-        else{
-            System.out.println("El empleado no existe");
+        try {
+            validarCedula(cedula);
+            validarEmpleadoExiste(cedula);
+
+            int indice = buscarEmpleado(cedula);
+            return empleados.get(indice).contarAutenticacionesHuella();
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
             return -1;
         }
-
     }
 
     public String metodosAuntentificacionMayorUmbral(String cedula, int umbral){
-        int indice = buscarEmpleado(cedula);
-        if (indice != -1)
+        try {
+            validarCedula(cedula);
+            validarNivelSeguridad(umbral);
+            validarEmpleadoExiste(cedula);
+
+            int indice = buscarEmpleado(cedula);
             return empleados.get(indice).autenticacionesUmbral(umbral);
-        else{
-            System.out.println("El empleado no existe");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
             return null;
         }
     }
@@ -94,5 +172,4 @@ public class Util {
         System.out.println("14. Salir");
         System.out.print("Seleccione opción: ");
     }
-
 }
