@@ -30,21 +30,39 @@ public class Main {
                         System.out.print("Cédula: ");
                         ced = sc.nextLine();
                         try {
-                            util.agregarEmpleado(ced, "dummy");
-                            cedulaValida = true;
-                        } catch (IllegalArgumentException e) {
-                            if (e.getMessage().contains("Ya existe")) {
-                                System.out.println(e.getMessage());
-                                break;
-                            } else if (e.getMessage().contains("cédula")) {
-                                System.out.println(e.getMessage());
-                            } else {
-                                cedulaValida = true;
+                            // Validar formato de cédula (sin agregar empleado aún)
+                            if (ced == null || ced.trim().isEmpty()) {
+                                System.out.println("Error: La cédula no puede estar vacía");
+                                continue;
                             }
+                            if (ced.length() != 10) {
+                                System.out.println("Error: La cédula debe tener exactamente 10 dígitos");
+                                continue;
+                            }
+                            for (int i = 0; i < ced.length(); i++) {
+                                if (!Character.isDigit(ced.charAt(i))) {
+                                    System.out.println("Error: La cédula solo puede contener números");
+                                    continue;
+                                }
+                            }
+                            if (ced.startsWith("-")) {
+                                System.out.println("Error: La cédula no puede ser negativa");
+                                continue;
+                            }
+
+                            // Validar que no exista ya
+                            if (util.buscarEmpleado(ced) != -1) {
+                                System.out.println("Error: Ya existe un empleado con esta cédula");
+                                break; // Salir del bucle si la cédula ya existe
+                            }
+
+                            cedulaValida = true;
+                        } catch (Exception e) {
+                            System.out.println("Error: " + e.getMessage());
                         }
                     }
 
-                    if (!cedulaValida) break;
+                    if (!cedulaValida) break; // Si salió por cédula duplicada, volver al menú
 
                     // Bucle para nombre
                     boolean nombreValido = false;
@@ -273,8 +291,6 @@ public class Main {
                         System.out.println("No hay empleados registrados");
                         break;
                     }
-
-                    // Bucle para cédula
                     ced = "";
                     cedulaEncontrada = false;
                     int indice = -1;  // INICIALIZAR AQUÍ
@@ -306,8 +322,6 @@ public class Main {
                         System.out.println("No hay empleados registrados");
                         break;
                     }
-
-                    // Bucle para cédula
                     ced = "";
                     cedulaEncontrada = false;
                     indice = -1;  // INICIALIZAR AQUÍ
@@ -360,8 +374,6 @@ public class Main {
                         System.out.println("No hay empleados registrados");
                         break;
                     }
-
-                    // Bucle para cédula
                     ced = "";
                     cedulaEncontrada = false;
                     indice = -1;  // INICIALIZAR AQUÍ
@@ -468,8 +480,6 @@ public class Main {
                         System.out.println("No hay empleados registrados");
                         break;
                     }
-
-                    // Bucle para cédula
                     ced = "";
                     cedulaEncontrada = false;
                     indice = -1;  // INICIALIZAR CON VALOR POR DEFECTO
